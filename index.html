@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#10141d">
+    <title>StegaStamp — Image message studio</title>
+    <style>
+        :root {
+            color-scheme: dark;
+            --bg: #10141d;
+            --panel: #191f2b;
+            --panel-raised: #202837;
+            --line: #303b4c;
+            --text: #f3f5f8;
+            --muted: #9aa8bb;
+            --accent: #b7f36b;
+            --accent-ink: #17200d;
+            --danger: #ff9a9a;
+            --success: #c9f49c;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-width: 320px;
+            margin: 0;
+            background:
+                radial-gradient(ellipse at 50% -20%, #263a38 0, transparent 46rem),
+                var(--bg);
+            color: var(--text);
+            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            line-height: 1.5;
+        }
+
+        button, input, textarea { font: inherit; }
+        button { cursor: pointer; }
+
+        .shell { width: min(100% - 32px, 1040px); margin: 0 auto; padding: 48px 0 64px; }
+        .topline { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .82rem; letter-spacing: .08em; text-transform: uppercase; }
+        .mark {
+            display: grid;
+            width: 34px;
+            height: 34px;
+            place-items: center;
+            border: 1px solid #53633d;
+            border-radius: 11px;
+            background: #263421;
+            color: var(--accent);
+            font-size: 1rem;
+        }
+        h1 { margin: 24px 0 8px; font-size: clamp(2.1rem, 5vw, 3.35rem); line-height: 1.05; letter-spacing: -.055em; }
+        .intro { max-width: 650px; margin: 0; color: var(--muted); font-size: 1.03rem; }
+        .privacy { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; color: var(--success); font-size: .88rem; }
+        .privacy::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #b7f36b80; }
+
+        .workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 34px; align-items: start; }
+        .card { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 95%, transparent); box-shadow: 0 20px 55px #00000018; }
+        .card-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+        .step { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border: 1px solid var(--line); border-radius: 10px; color: var(--accent); font-size: .82rem; font-weight: 700; }
+        h2 { margin: 0; font-size: 1.12rem; letter-spacing: -.02em; }
+        .subheading { margin: 2px 0 0; color: var(--muted); font-size: .83rem; }
+
+        .drop-zone {
+            position: relative;
+            display: grid;
+            min-height: 190px;
+            padding: 22px;
+            place-items: center;
+            border: 1px dashed #536177;
+            border-radius: 14px;
+            background: #131923;
+            text-align: center;
+            transition: border-color .16s ease, background .16s ease, transform .16s ease;
+        }
+        .drop-zone:hover, .drop-zone:focus-within, .drop-zone.is-over { border-color: var(--accent); background: #19221b; }
+        .drop-zone.is-over { transform: scale(1.01); }
+        .drop-zone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .drop-content { pointer-events: none; }
+        .upload-icon { display: grid; width: 42px; height: 42px; margin: 0 auto 12px; place-items: center; border-radius: 13px; background: var(--panel-raised); color: var(--accent); font-size: 1.35rem; }
+        .drop-title { margin: 0; font-weight: 650; }
+        .drop-hint { margin: 5px 0 0; color: var(--muted); font-size: .82rem; }
+        .file-name { max-width: 100%; overflow: hidden; margin: 10px 0 0; color: var(--accent); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
+
+        .field { display: block; margin-top: 18px; }
+        .field-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: .87rem; font-weight: 600; }
+        .field-hint { color: var(--muted); font-size: .78rem; font-weight: 400; }
+        textarea {
+            display: block;
+            width: 100%;
+            min-height: 105px;
+            resize: vertical;
+            padding: 12px 13px;
+            border: 1px solid var(--line);
+            border-radius: 11px;
+            outline: none;
+            background: #131923;
+            color: var(--text);
+        }
+        textarea:focus { border-color: #9dce5d; box-shadow: 0 0 0 3px #b7f36b1c; }
+        textarea::placeholder { color: #67758a; }
+
+        .primary, .secondary {
+            display: inline-flex;
+            min-height: 43px;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 0 16px;
+            border: 0;
+            border-radius: 11px;
+            font-weight: 700;
+            transition: opacity .16s ease, transform .16s ease, background .16s ease;
+        }
+        .primary { width: 100%; margin-top: 16px; background: var(--accent); color: var(--accent-ink); }
+        .secondary { border: 1px solid var(--line); background: var(--panel-raised); color: var(--text); text-decoration: none; }
+        .primary:hover:not(:disabled), .secondary:hover { transform: translateY(-1px); }
+        .primary:disabled { cursor: wait; opacity: .58; }
+        button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+        .status { min-height: 22px; margin: 12px 0 0; color: var(--muted); font-size: .84rem; overflow-wrap: anywhere; }
+        .status.error { color: var(--danger); }
+        .status.success { color: var(--success); }
+        .result { display: none; margin-top: 16px; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: #131923; }
+        .result.visible { display: block; }
+        .result img { display: block; width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; background: #0c1017; }
+        .result-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
+        .result-actions .secondary { min-height: 38px; padding: 0 12px; font-size: .84rem; }
+        .message-output { min-height: 105px; overflow-wrap: anywhere; white-space: pre-wrap; }
+        .message-placeholder { color: var(--muted); }
+
+        .notice { margin-top: 18px; padding: 14px 16px; border: 1px solid #46513a; border-radius: 12px; background: #1c2419; color: #d3dfc5; font-size: .82rem; }
+        .notice strong { color: var(--accent); }
+        footer { margin-top: 25px; color: var(--muted); font-size: .78rem; text-align: center; }
+
+        @media (max-width: 720px) {
+            .shell { padding-top: 30px; }
+            .workspace { grid-template-columns: 1fr; }
+            .card { padding: 18px; }
+            .drop-zone { min-height: 165px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <div class="topline"><span class="mark" aria-hidden="true">S</span> Image message studio</div>
+        <h1>Messages, tucked<br>inside images.</h1>
+        <p class="intro">Add a private text payload to an image, download the result, and decode it again whenever you need. Your files stay on this device.</p>
+        <div class="privacy">All processing happens locally in your browser</div>
+
+        <div class="workspace">
+            <section class="card" aria-labelledby="encode-title">
+                <div class="card-heading">
+                    <span class="step" aria-hidden="true">01</span>
+                    <div><h2 id="encode-title">Encode a message</h2><p class="subheading">Choose a cover image and add your text.</p></div>
+                </div>
+                <label class="drop-zone" id="encodeDrop">
+                    <input id="encodeFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose an image to encode">
+                    <span class="drop-content">
+                        <span class="upload-icon" aria-hidden="true">↑</span>
+                        <span class="drop-title">Drop an image here or browse</span>
+                        <span class="drop-hint">PNG, JPEG or WebP · up to 20 MB</span>
+                        <span class="file-name" id="encodeFileName"></span>
+                    </span>
+                </label>
+                <label class="field" for="secretText">
+                    <span class="field-label">Your message <span class="field-hint" id="charCount">0 characters</span></span>
+                    <textarea id="secretText" placeholder="Type the text you want to hide…" spellcheck="false"></textarea>
+                </label>
+                <button class="primary" id="encodeButton" type="button">Encode and prepare PNG <span aria-hidden="true">→</span></button>
+                <p class="status" id="encodeStatus" role="status" aria-live="polite"></p>
+                <div class="result" id="encodeResult">
+                    <img id="encodedPreview" alt="Preview of the encoded image">
+                    <div class="result-actions">
+                        <a class="secondary" id="downloadLink" download="stegastamp-hidden.png">Download PNG</a>
+                        <button class="secondary" id="decodeCurrent" type="button">Decode this image</button>
+                    </div>
+                </div>
+            </section>
+
+            <section class="card" aria-labelledby="decode-title">
+                <div class="card-heading">
+                    <span class="step" aria-hidden="true">02</span>
+                    <div><h2 id="decode-title">Decode an image</h2><p class="subheading">Select an image made with this tool.</p></div>
+                </div>
+                <label class="drop-zone" id="decodeDrop">
+                    <input id="decodeFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose an image to decode">
+                    <span class="drop-content">
+                        <span class="upload-icon" aria-hidden="true">↓</span>
+                        <span class="drop-title">Drop an image here or browse</span>
+                        <span class="drop-hint">Use the original PNG for reliable decoding</span>
+                        <span class="file-name" id="decodeFileName"></span>
+                    </span>
+                </label>
+                <button class="primary" id="decodeButton" type="button">Reveal message <span aria-hidden="true">→</span></button>
+                <p class="status" id="decodeStatus" role="status" aria-live="polite"></p>
+                <div class="result" id="decodeResult">
+                    <div class="field-label">Decoded message</div>
+                    <div class="message-output" id="decodedMessage"></div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="notice">
+            <strong>About this browser version:</strong> it stores text in a small, reversible RGB pixel residual (at most one color level per changed channel) and exports a lossless PNG. This is a lightweight client-side method, not the trained neural StegaStamp model. Resizing, editing, or JPEG-compressing the encoded image can damage the message. Keep the output as PNG.
+        </aside>
+        <footer>No uploads, accounts, or server-side processing required.</footer>
+    </main>
+
+    <script>
+        (function () {
+            "use strict";
+
+            const MAX_FILE_BYTES = 20 * 1024 * 1024;
+            const MAX_PIXELS = 16_000_000;
+            const MAX_MESSAGE_BYTES = 1_000_000;
+            const HEADER_BYTES = 12;
+            const MAGIC = [0x53, 0x54, 0x47, 0x31];
+            const crcTable = new Uint32Array(256);
+            let encodeFile = null;
+            let decodeFile = null;
+            let encodedObjectUrl = null;
+            let encodedImageData = null;
+
+            for (let n = 0; n < 256; n += 1) {
+                let c = n;
+                for (let k = 0; k < 8; k += 1) c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+                crcTable[n] = c >>> 0;
+            }
+
+            function crc32(bytes) {
+                let crc = 0xffffffff;
+                for (let i = 0; i < bytes.length; i += 1) crc = crcTable[(crc ^ bytes[i]) & 0xff] ^ (crc >>> 8);
+                return (crc ^ 0xffffffff) >>> 0;
+            }
+
+            function setStatus(id, message, kind) {
+                const element = document.getElementById(id);
+                element.textContent = message;
+                element.className = "status" + (kind ? " " + kind : "");
+            }
+
+            function setBusy(buttonId, busy, label) {
+                const button = document.getElementById(buttonId);
+                button.disabled = busy;
+                if (busy) {
+                    button.dataset.label = button.innerHTML;
+                    button.textContent = label;
+                } else if (button.dataset.label) {
+                    button.innerHTML = button.dataset.label;
+                    delete button.dataset.label;
+                }
+            }
+
+            function checkFile(file) {
+                if (!file) throw new Error("Choose an image first.");
+                if (!["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+                    throw new Error("Choose a PNG, JPEG, or WebP image.");
+                }
+                if (file.size > MAX_FILE_BYTES) throw new Error("That image is larger than 20 MB.");
+            }
+
+            async function readImage(file) {
+                checkFile(file);
+                let bitmap;
+                try {
+                    bitmap = await createImageBitmap(file);
+                } catch (error) {
+                    throw new Error("The selected file could not be opened as an image.");
+                }
+                try {
+                    const width = bitmap.width;
+                    const height = bitmap.height;
+                    if (!width || !height || width * height > MAX_PIXELS) {
+                        throw new Error("This image is too large to process in the browser (maximum 16 megapixels).");
+                    }
+                    const canvas = document.createElement("canvas");
+                    canvas.width = width;
+                    canvas.height = height;
+                    const context = canvas.getContext("2d", { willReadFrequently: true });
+                    if (!context) throw new Error("Your browser could not create an image canvas.");
+                    context.drawImage(bitmap, 0, 0);
+                    return { canvas: canvas, context: context, imageData: context.getImageData(0, 0, width, height), width: width, height: height };
+                } finally {
+                    bitmap.close();
+                }
+            }
+
+            function setFile(mode, file) {
+                if (!file) return;
+                try {
+                    checkFile(file);
+                    if (mode === "encode") {
+                        encodeFile = file;
+                        document.getElementById("encodeFileName").textContent = file.name;
+                        setStatus("encodeStatus", "", "");
+                    } else {
+                        decodeFile = file;
+                        document.getElementById("decodeFileName").textContent = file.name;
+                        setStatus("decodeStatus", "", "");
+                    }
+                } catch (error) {
+                    setStatus(mode + "Status", error.message, "error");
+                }
+            }
+
+            function bindDropZone(mode) {
+                const input = document.getElementById(mode + "File");
+                const zone = document.getElementById(mode + "Drop");
+                input.addEventListener("change", function () { setFile(mode, input.files[0]); });
+                ["dragenter", "dragover"].forEach(function (eventName) {
+                    zone.addEventListener(eventName, function (event) {
+                        event.preventDefault();
+                        zone.classList.add("is-over");
+                    });
+                });
+                ["dragleave", "drop"].forEach(function (eventName) {
+                    zone.addEventListener(eventName, function (event) {
+                        event.preventDefault();
+                        zone.classList.remove("is-over");
+                    });
+                });
+                zone.addEventListener("drop", function (event) {
+                    const file = event.dataTransfer && event.dataTransfer.files[0];
+                    if (file) setFile(mode, file);
+                });
+            }
+
+            function packMessage(messageBytes) {
+                const packet = new Uint8Array(HEADER_BYTES + messageBytes.length);
+                packet.set(MAGIC, 0);
+                const header = new DataView(packet.buffer);
+                header.setUint32(4, messageBytes.length, false);
+                header.setUint32(8, crc32(messageBytes), false);
+                packet.set(messageBytes, HEADER_BYTES);
+                return packet;
+            }
+
+            function writePacket(imageData, packet) {
+                let bitIndex = 0;
+                const bitCount = packet.length * 8;
+                const pixels = imageData.data;
+                for (let i = 0; i < pixels.length && bitIndex < bitCount; i += 4) {
+                    for (let channel = 0; channel < 3 && bitIndex < bitCount; channel += 1) {
+                        const byte = packet[bitIndex >>> 3];
+                        const bit = (byte >>> (7 - (bitIndex & 7))) & 1;
+                        const value = pixels[i + channel];
+                        if ((value & 1) !== bit) {
+                            pixels[i + channel] = value < 128 ? value + 1 : value - 1;
+                        }
+                        bitIndex += 1;
+                    }
+                }
+                if (bitIndex !== bitCount) throw new Error("The image does not have enough room for this message.");
+            }
+
+            function readPacket(imageData) {
+                const pixels = imageData.data;
+                const availableBits = Math.floor((pixels.length / 4) * 3);
+                if (availableBits < HEADER_BYTES * 8) throw new Error("This image is too small to contain a message.");
+                const headerBytes = new Uint8Array(HEADER_BYTES);
+                for (let bitIndex = 0; bitIndex < HEADER_BYTES * 8; bitIndex += 1) {
+                    const pixelIndex = Math.floor(bitIndex / 3) * 4 + (bitIndex % 3);
+                    headerBytes[bitIndex >>> 3] |= (pixels[pixelIndex] & 1) << (7 - (bitIndex & 7));
+                }
+                for (let i = 0; i < MAGIC.length; i += 1) {
+                    if (headerBytes[i] !== MAGIC[i]) throw new Error("No message from this tool was found in the selected image.");
+                }
+                const header = new DataView(headerBytes.buffer);
+                const length = header.getUint32(4, false);
+                const expectedCrc = header.getUint32(8, false);
+                if (length > MAX_MESSAGE_BYTES || length * 8 > availableBits - HEADER_BYTES * 8) {
+                    throw new Error("The image data is incomplete or does not contain a valid message.");
+                }
+                const payload = new Uint8Array(length);
+                const payloadStart = HEADER_BYTES * 8;
+                for (let bitIndex = 0; bitIndex < length * 8; bitIndex += 1) {
+                    const absoluteBit = payloadStart + bitIndex;
+                    const pixelIndex = Math.floor(absoluteBit / 3) * 4 + (absoluteBit % 3);
+                    payload[bitIndex >>> 3] |= (pixels[pixelIndex] & 1) << (7 - (bitIndex & 7));
+                }
+                if (crc32(payload) !== expectedCrc) {
+                    throw new Error("The message data is damaged. Use the original PNG without resizing or recompressing it.");
+                }
+                try {
+                    return new TextDecoder("utf-8", { fatal: true }).decode(payload);
+                } catch (error) {
+                    throw new Error("The hidden payload is not valid UTF-8 text.");
+                }
+            }
+
+            function showDecodedMessage(message) {
+                document.getElementById("decodedMessage").textContent = message;
+                document.getElementById("decodeResult").classList.add("visible");
+                document.getElementById("decodeResult").scrollIntoView({ behavior: "smooth", block: "nearest" });
+                setStatus("decodeStatus", "Message recovered successfully.", "success");
+            }
+
+            async function encode() {
+                setBusy("encodeButton", true, "Processing image…");
+                setStatus("encodeStatus", "", "");
+                document.getElementById("encodeResult").classList.remove("visible");
+                try {
+                    const message = document.getElementById("secretText").value;
+                    const messageBytes = new TextEncoder().encode(message);
+                    if (!messageBytes.length) throw new Error("Enter a message to encode.");
+                    if (messageBytes.length > MAX_MESSAGE_BYTES) throw new Error("Messages are limited to 1 MB.");
+                    const source = await readImage(encodeFile);
+                    const capacity = Math.floor((source.width * source.height * 3) / 8) - HEADER_BYTES;
+                    if (messageBytes.length > capacity) {
+                        throw new Error("This image can hold " + Math.max(0, capacity) + " message bytes. Choose a larger image or a shorter message.");
+                    }
+                    const packet = packMessage(messageBytes);
+                    writePacket(source.imageData, packet);
+                    source.context.putImageData(source.imageData, 0, 0);
+                    const blob = await new Promise(function (resolve, reject) {
+                        source.canvas.toBlob(function (result) {
+                            if (result) resolve(result);
+                            else reject(new Error("The browser could not export the image."));
+                        }, "image/png");
+                    });
+                    if (encodedObjectUrl) URL.revokeObjectURL(encodedObjectUrl);
+                    encodedObjectUrl = URL.createObjectURL(blob);
+                    document.getElementById("encodedPreview").src = encodedObjectUrl;
+                    document.getElementById("downloadLink").href = encodedObjectUrl;
+                    document.getElementById("encodeResult").classList.add("visible");
+                    encodedImageData = source.imageData;
+                    const capacityLabel = Math.max(0, capacity);
+                    setStatus("encodeStatus", "Encoded as a lossless PNG. " + messageBytes.length + " of " + capacityLabel + " available message bytes used.", "success");
+                } catch (error) {
+                    setStatus("encodeStatus", error.message || "Could not encode this image.", "error");
+                } finally {
+                    setBusy("encodeButton", false);
+                }
+            }
+
+            async function decode() {
+                setBusy("decodeButton", true, "Reading image…");
+                setStatus("decodeStatus", "", "");
+                document.getElementById("decodeResult").classList.remove("visible");
+                try {
+                    const source = await readImage(decodeFile);
+                    showDecodedMessage(readPacket(source.imageData));
+                } catch (error) {
+                    setStatus("decodeStatus", error.message || "Could not decode this image.", "error");
+                } finally {
+                    setBusy("decodeButton", false);
+                }
+            }
+
+            document.getElementById("secretText").addEventListener("input", function (event) {
+                const count = new TextEncoder().encode(event.target.value).length;
+                document.getElementById("charCount").textContent = count.toLocaleString() + (count === 1 ? " byte" : " bytes");
+            });
+            document.getElementById("encodeButton").addEventListener("click", encode);
+            document.getElementById("decodeButton").addEventListener("click", decode);
+            document.getElementById("decodeCurrent").addEventListener("click", function () {
+                if (!encodedImageData) return;
+                try {
+                    showDecodedMessage(readPacket(encodedImageData));
+                } catch (error) {
+                    setStatus("decodeStatus", error.message || "Could not decode this image.", "error");
+                }
+                document.getElementById("decode-title").scrollIntoView({ behavior: "smooth", block: "center" });
+            });
+            bindDropZone("encode");
+            bindDropZone("decode");
+            window.addEventListener("pagehide", function () {
+                if (encodedObjectUrl) URL.revokeObjectURL(encodedObjectUrl);
+            });
+        }());
+    </script>
+</body>
+</html>
