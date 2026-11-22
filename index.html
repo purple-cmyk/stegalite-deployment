@@ -3,181 +3,593 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#10141d">
-    <title>StegaStamp — Image message studio</title>
+    <meta name="theme-color" content="#050505">
+    <title>STEGASTAMP // B&W IMAGE PAYLOAD STUDIO</title>
     <style>
         :root {
             color-scheme: dark;
-            --bg: #10141d;
-            --panel: #191f2b;
-            --panel-raised: #202837;
-            --line: #303b4c;
-            --text: #f3f5f8;
-            --muted: #9aa8bb;
-            --accent: #b7f36b;
-            --accent-ink: #17200d;
-            --danger: #ff9a9a;
-            --success: #c9f49c;
+            --bg: #050505;
+            --surface: #0a0a0a;
+            --surface-elevated: #111111;
+            --border: #ffffff;
+            --border-dim: #333333;
+            --text: #ffffff;
+            --muted: #888888;
+            --accent: #ffffff;
+            --accent-ink: #050505;
+            --danger: #ffffff;
+            --success: #ffffff;
+            --font-sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
         }
 
-        * { box-sizing: border-box; }
+        * {
+            box-sizing: border-box;
+            border-radius: 0 !important;
+        }
+
+        ::selection {
+            background: #ffffff;
+            color: #050505;
+        }
 
         body {
             min-width: 320px;
             margin: 0;
-            background:
-                radial-gradient(ellipse at 50% -20%, #263a38 0, transparent 46rem),
-                var(--bg);
+            background-color: var(--bg);
+            background-image:
+                linear-gradient(to right, #141414 1px, transparent 1px),
+                linear-gradient(to bottom, #141414 1px, transparent 1px);
+            background-size: 32px 32px;
             color: var(--text);
-            font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            font-family: var(--font-sans);
             line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
 
-        button, input, textarea { font: inherit; }
-        button { cursor: pointer; }
+        button, input, textarea {
+            font: inherit;
+        }
 
-        .shell { width: min(100% - 32px, 1040px); margin: 0 auto; padding: 48px 0 64px; }
-        .topline { display: flex; align-items: center; gap: 12px; color: var(--muted); font-size: .82rem; letter-spacing: .08em; text-transform: uppercase; }
+        button {
+            cursor: pointer;
+        }
+
+        .shell {
+            width: min(100% - 32px, 1080px);
+            margin: 0 auto;
+            padding: 40px 0 72px;
+        }
+
+        /* Header / Top Bar */
+        .header-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .topline {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+        }
+
         .mark {
             display: grid;
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             place-items: center;
-            border: 1px solid #53633d;
-            border-radius: 11px;
-            background: #263421;
-            color: var(--accent);
+            border: 2px solid var(--border);
+            background: var(--accent);
+            color: var(--accent-ink);
+            font-family: var(--font-mono);
+            font-weight: 900;
             font-size: 1rem;
         }
-        h1 { margin: 24px 0 8px; font-size: clamp(2.1rem, 5vw, 3.35rem); line-height: 1.05; letter-spacing: -.055em; }
-        .intro { max-width: 650px; margin: 0; color: var(--muted); font-size: 1.03rem; }
-        .privacy { display: inline-flex; align-items: center; gap: 8px; margin-top: 20px; color: var(--success); font-size: .88rem; }
-        .privacy::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 12px #b7f36b80; }
 
-        .workspace { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 34px; align-items: start; }
-        .card { min-width: 0; padding: 22px; border: 1px solid var(--line); border-radius: 18px; background: color-mix(in srgb, var(--panel) 95%, transparent); box-shadow: 0 20px 55px #00000018; }
-        .card-heading { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
-        .step { display: grid; width: 34px; height: 34px; flex: 0 0 34px; place-items: center; border: 1px solid var(--line); border-radius: 10px; color: var(--accent); font-size: .82rem; font-weight: 700; }
-        h2 { margin: 0; font-size: 1.12rem; letter-spacing: -.02em; }
-        .subheading { margin: 2px 0 0; color: var(--muted); font-size: .83rem; }
+        .privacy {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 12px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
 
+        .privacy::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            background: var(--text);
+            display: inline-block;
+        }
+
+        .hero {
+            padding: 32px 0 28px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        h1 {
+            margin: 0 0 14px;
+            font-size: clamp(2.25rem, 5.5vw, 3.8rem);
+            font-weight: 900;
+            line-height: 0.98;
+            letter-spacing: -0.04em;
+            text-transform: uppercase;
+        }
+
+        .intro {
+            max-width: 680px;
+            margin: 0;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.88rem;
+            line-height: 1.6;
+        }
+
+        /* Workspace Grid */
+        .workspace {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 28px;
+            margin-top: 36px;
+            align-items: start;
+        }
+
+        .card {
+            min-width: 0;
+            padding: 24px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            box-shadow: 6px 6px 0px #ffffff;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .card-heading {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding-bottom: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-dim);
+        }
+
+        .step {
+            display: grid;
+            width: 38px;
+            height: 38px;
+            flex: 0 0 38px;
+            place-items: center;
+            border: 2px solid var(--border);
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 800;
+        }
+
+        h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            text-transform: uppercase;
+        }
+
+        .subheading {
+            margin: 3px 0 0;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+        }
+
+        /* Drop Zone */
         .drop-zone {
             position: relative;
             display: grid;
-            min-height: 190px;
+            min-height: 185px;
             padding: 22px;
             place-items: center;
-            border: 1px dashed #536177;
-            border-radius: 14px;
-            background: #131923;
+            border: 2px dashed var(--border-dim);
+            background: var(--bg);
             text-align: center;
-            transition: border-color .16s ease, background .16s ease, transform .16s ease;
+            transition: border-color 0.12s ease, background 0.12s ease;
         }
-        .drop-zone:hover, .drop-zone:focus-within, .drop-zone.is-over { border-color: var(--accent); background: #19221b; }
-        .drop-zone.is-over { transform: scale(1.01); }
-        .drop-zone input { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .drop-content { pointer-events: none; }
-        .upload-icon { display: grid; width: 42px; height: 42px; margin: 0 auto 12px; place-items: center; border-radius: 13px; background: var(--panel-raised); color: var(--accent); font-size: 1.35rem; }
-        .drop-title { margin: 0; font-weight: 650; }
-        .drop-hint { margin: 5px 0 0; color: var(--muted); font-size: .82rem; }
-        .file-name { max-width: 100%; overflow: hidden; margin: 10px 0 0; color: var(--accent); font-size: .82rem; text-overflow: ellipsis; white-space: nowrap; }
 
-        .field { display: block; margin-top: 18px; }
-        .field-label { display: flex; justify-content: space-between; gap: 10px; margin-bottom: 8px; font-size: .87rem; font-weight: 600; }
-        .field-hint { color: var(--muted); font-size: .78rem; font-weight: 400; }
+        .drop-zone:hover,
+        .drop-zone:focus-within,
+        .drop-zone.is-over {
+            border-style: solid;
+            border-color: var(--border);
+            background: var(--surface-elevated);
+        }
+
+        .drop-zone input {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .drop-content {
+            pointer-events: none;
+            max-width: 100%;
+        }
+
+        .upload-icon {
+            display: grid;
+            width: 40px;
+            height: 40px;
+            margin: 0 auto 12px;
+            place-items: center;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            font-weight: 800;
+        }
+
+        .drop-title {
+            display: block;
+            margin: 0;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .drop-hint {
+            display: block;
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+        }
+
+        .file-name {
+            display: block;
+            max-width: 100%;
+            overflow: hidden;
+            margin: 12px auto 0;
+            padding: 3px 8px;
+            color: var(--accent-ink);
+            background: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .file-name:empty {
+            display: none;
+        }
+
+        /* Form Fields */
+        .field {
+            display: block;
+            margin-top: 20px;
+        }
+
+        .field-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .field-hint {
+            color: var(--muted);
+            font-size: 0.74rem;
+            font-weight: 500;
+        }
+
         textarea {
             display: block;
             width: 100%;
-            min-height: 105px;
+            min-height: 112px;
             resize: vertical;
-            padding: 12px 13px;
-            border: 1px solid var(--line);
-            border-radius: 11px;
+            padding: 12px 14px;
+            border: 2px solid var(--border-dim);
             outline: none;
-            background: #131923;
+            background: var(--bg);
             color: var(--text);
+            font-family: var(--font-mono);
+            font-size: 0.86rem;
+            line-height: 1.5;
+            transition: border-color 0.12s ease, box-shadow 0.12s ease;
         }
-        textarea:focus { border-color: #9dce5d; box-shadow: 0 0 0 3px #b7f36b1c; }
-        textarea::placeholder { color: #67758a; }
 
-        .primary, .secondary {
+        textarea:focus {
+            border-color: var(--border);
+            box-shadow: 4px 4px 0px #ffffff;
+        }
+
+        textarea::placeholder {
+            color: #555555;
+        }
+
+        /* Buttons */
+        .primary,
+        .secondary {
             display: inline-flex;
-            min-height: 43px;
+            min-height: 46px;
             align-items: center;
             justify-content: center;
-            gap: 9px;
-            padding: 0 16px;
-            border: 0;
-            border-radius: 11px;
-            font-weight: 700;
-            transition: opacity .16s ease, transform .16s ease, background .16s ease;
+            gap: 10px;
+            padding: 0 18px;
+            border: 2px solid var(--border);
+            font-family: var(--font-mono);
+            font-size: 0.82rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            text-decoration: none;
+            transition: transform 0.1s ease, box-shadow 0.1s ease, background 0.1s ease, color 0.1s ease;
         }
-        .primary { width: 100%; margin-top: 16px; background: var(--accent); color: var(--accent-ink); }
-        .secondary { border: 1px solid var(--line); background: var(--panel-raised); color: var(--text); text-decoration: none; }
-        .primary:hover:not(:disabled), .secondary:hover { transform: translateY(-1px); }
-        .primary:disabled { cursor: wait; opacity: .58; }
-        button:focus-visible, a:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 
-        .status { min-height: 22px; margin: 12px 0 0; color: var(--muted); font-size: .84rem; overflow-wrap: anywhere; }
-        .status.error { color: var(--danger); }
-        .status.success { color: var(--success); }
-        .result { display: none; margin-top: 16px; padding: 13px; border: 1px solid var(--line); border-radius: 12px; background: #131923; }
-        .result.visible { display: block; }
-        .result img { display: block; width: 100%; max-height: 250px; object-fit: contain; border-radius: 8px; background: #0c1017; }
-        .result-actions { display: flex; flex-wrap: wrap; gap: 9px; margin-top: 12px; }
-        .result-actions .secondary { min-height: 38px; padding: 0 12px; font-size: .84rem; }
-        .message-output { min-height: 105px; overflow-wrap: anywhere; white-space: pre-wrap; }
-        .message-placeholder { color: var(--muted); }
+        .primary {
+            width: 100%;
+            margin-top: 18px;
+            background: var(--accent);
+            color: var(--accent-ink);
+            box-shadow: 4px 4px 0px #444444;
+        }
 
-        .notice { margin-top: 18px; padding: 14px 16px; border: 1px solid #46513a; border-radius: 12px; background: #1c2419; color: #d3dfc5; font-size: .82rem; }
-        .notice strong { color: var(--accent); }
-        footer { margin-top: 25px; color: var(--muted); font-size: .78rem; text-align: center; }
+        .primary:hover:not(:disabled) {
+            background: var(--bg);
+            color: var(--text);
+            box-shadow: 4px 4px 0px #ffffff;
+            transform: translate(-2px, -2px);
+        }
 
-        @media (max-width: 720px) {
-            .shell { padding-top: 30px; }
-            .workspace { grid-template-columns: 1fr; }
-            .card { padding: 18px; }
-            .drop-zone { min-height: 165px; }
+        .primary:active:not(:disabled) {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #ffffff;
+        }
+
+        .secondary {
+            background: var(--bg);
+            color: var(--text);
+            box-shadow: 3px 3px 0px #ffffff;
+        }
+
+        .secondary:hover {
+            background: var(--accent);
+            color: var(--accent-ink);
+            transform: translate(-1px, -1px);
+            box-shadow: 4px 4px 0px #666666;
+        }
+
+        .secondary:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px #ffffff;
+        }
+
+        .primary:disabled {
+            cursor: wait;
+            opacity: 0.5;
+            box-shadow: none;
+        }
+
+        button:focus-visible,
+        a:focus-visible,
+        input:focus-visible {
+            outline: 2px solid var(--border);
+            outline-offset: 4px;
+        }
+
+        /* Status & Results */
+        .status {
+            min-height: 20px;
+            margin: 14px 0 0;
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            overflow-wrap: anywhere;
+        }
+
+        .status:empty {
+            display: none;
+        }
+
+        .status.error {
+            padding: 8px 10px;
+            border: 1px dashed var(--border);
+            background: var(--bg);
+            color: var(--text);
+        }
+
+        .status.error::before {
+            content: "[ERR] ";
+            font-weight: 800;
+        }
+
+        .status.success {
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            background: var(--surface-elevated);
+            color: var(--text);
+        }
+
+        .status.success::before {
+            content: "[OK] ";
+            font-weight: 800;
+        }
+
+        .result {
+            display: none;
+            margin-top: 18px;
+            padding: 16px;
+            border: 2px solid var(--border);
+            background: var(--bg);
+        }
+
+        .result.visible {
+            display: block;
+        }
+
+        .result img {
+            display: block;
+            width: 100%;
+            max-height: 250px;
+            object-fit: contain;
+            border: 1px solid var(--border-dim);
+            background:
+                repeating-conic-gradient(#121212 0% 25%, #080808 0% 50%) 50% / 16px 16px;
+        }
+
+        .result-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .result-actions .secondary {
+            min-height: 40px;
+            padding: 0 14px;
+            font-size: 0.76rem;
+        }
+
+        .message-output {
+            min-height: 96px;
+            padding: 12px;
+            border: 1px solid var(--border-dim);
+            background: var(--surface);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            overflow-wrap: anywhere;
+            white-space: pre-wrap;
+        }
+
+        /* Notice & Footer */
+        .notice {
+            margin-top: 36px;
+            padding: 18px 20px;
+            border: 2px solid var(--border);
+            background: var(--surface);
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            line-height: 1.6;
+        }
+
+        .notice strong {
+            color: var(--text);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        footer {
+            margin-top: 24px;
+            padding-top: 18px;
+            border-top: 1px solid var(--border-dim);
+            color: var(--muted);
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            text-align: center;
+        }
+
+        @media (max-width: 760px) {
+            .shell {
+                padding-top: 24px;
+            }
+            .workspace {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .card {
+                padding: 18px;
+                box-shadow: 4px 4px 0px #ffffff;
+            }
+            .drop-zone {
+                min-height: 160px;
+            }
         }
 
         @media (prefers-reduced-motion: reduce) {
-            *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+            *, *::before, *::after {
+                scroll-behavior: auto !important;
+                transition-duration: 0.01ms !important;
+            }
         }
     </style>
 </head>
 <body>
     <main class="shell">
-        <div class="topline"><span class="mark" aria-hidden="true">S</span> Image message studio</div>
-        <h1>Messages, tucked<br>inside images.</h1>
-        <p class="intro">Add a private text payload to an image, download the result, and decode it again whenever you need. Your files stay on this device.</p>
-        <div class="privacy">All processing happens locally in your browser</div>
+        <header class="header-bar">
+            <div class="topline">
+                <span class="mark" aria-hidden="true">S//</span>
+                <span>StegaStamp.dev // Image Message Studio</span>
+            </div>
+            <div class="privacy">100% Local Browser Execution</div>
+        </header>
+
+        <section class="hero">
+            <h1>Messages, tucked<br>inside images.</h1>
+            <p class="intro">Embed a private UTF-8 payload directly into lossless image pixels, export the PNG, and extract it on demand. Zero network requests. Your files never leave this machine.</p>
+        </section>
 
         <div class="workspace">
             <section class="card" aria-labelledby="encode-title">
                 <div class="card-heading">
                     <span class="step" aria-hidden="true">01</span>
-                    <div><h2 id="encode-title">Encode a message</h2><p class="subheading">Choose a cover image and add your text.</p></div>
+                    <div>
+                        <h2 id="encode-title">Encode Payload</h2>
+                        <p class="subheading">Select cover image &amp; inject text bytes.</p>
+                    </div>
                 </div>
                 <label class="drop-zone" id="encodeDrop">
                     <input id="encodeFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose an image to encode">
                     <span class="drop-content">
                         <span class="upload-icon" aria-hidden="true">↑</span>
-                        <span class="drop-title">Drop an image here or browse</span>
-                        <span class="drop-hint">PNG, JPEG or WebP · up to 20 MB</span>
+                        <span class="drop-title">Drop cover image or browse</span>
+                        <span class="drop-hint">PNG, JPEG, WEBP // MAX 20 MB</span>
                         <span class="file-name" id="encodeFileName"></span>
                     </span>
                 </label>
                 <label class="field" for="secretText">
-                    <span class="field-label">Your message <span class="field-hint" id="charCount">0 characters</span></span>
-                    <textarea id="secretText" placeholder="Type the text you want to hide…" spellcheck="false"></textarea>
+                    <span class="field-label">
+                        <span>Secret Payload</span>
+                        <span class="field-hint" id="charCount">0 bytes</span>
+                    </span>
+                    <textarea id="secretText" placeholder="Enter plaintext payload to embed..." spellcheck="false"></textarea>
                 </label>
-                <button class="primary" id="encodeButton" type="button">Encode and prepare PNG <span aria-hidden="true">→</span></button>
+                <button class="primary" id="encodeButton" type="button">Encode &amp; Build PNG <span aria-hidden="true">→</span></button>
                 <p class="status" id="encodeStatus" role="status" aria-live="polite"></p>
                 <div class="result" id="encodeResult">
                     <img id="encodedPreview" alt="Preview of the encoded image">
                     <div class="result-actions">
-                        <a class="secondary" id="downloadLink" download="stegastamp-hidden.png">Download PNG</a>
-                        <button class="secondary" id="decodeCurrent" type="button">Decode this image</button>
+                        <a class="secondary" id="downloadLink" download="stegastamp-hidden.png">Download PNG ↓</a>
+                        <button class="secondary" id="decodeCurrent" type="button">Verify &amp; Decode</button>
                     </div>
                 </div>
             </section>
@@ -185,30 +597,33 @@
             <section class="card" aria-labelledby="decode-title">
                 <div class="card-heading">
                     <span class="step" aria-hidden="true">02</span>
-                    <div><h2 id="decode-title">Decode an image</h2><p class="subheading">Select an image made with this tool.</p></div>
+                    <div>
+                        <h2 id="decode-title">Decode Payload</h2>
+                        <p class="subheading">Extract hidden message from encoded PNG.</p>
+                    </div>
                 </div>
                 <label class="drop-zone" id="decodeDrop">
                     <input id="decodeFile" type="file" accept="image/png,image/jpeg,image/webp" aria-label="Choose an image to decode">
                     <span class="drop-content">
                         <span class="upload-icon" aria-hidden="true">↓</span>
-                        <span class="drop-title">Drop an image here or browse</span>
-                        <span class="drop-hint">Use the original PNG for reliable decoding</span>
+                        <span class="drop-title">Drop encoded image or browse</span>
+                        <span class="drop-hint">LOSSLESS PNG REQUIRED FOR INTEGRITY</span>
                         <span class="file-name" id="decodeFileName"></span>
                     </span>
                 </label>
-                <button class="primary" id="decodeButton" type="button">Reveal message <span aria-hidden="true">→</span></button>
+                <button class="primary" id="decodeButton" type="button">Extract Message <span aria-hidden="true">→</span></button>
                 <p class="status" id="decodeStatus" role="status" aria-live="polite"></p>
                 <div class="result" id="decodeResult">
-                    <div class="field-label">Decoded message</div>
+                    <div class="field-label">Recovered Output</div>
                     <div class="message-output" id="decodedMessage"></div>
                 </div>
             </section>
         </div>
 
         <aside class="notice">
-            <strong>About this browser version:</strong> it stores text in a small, reversible RGB pixel residual (at most one color level per changed channel) and exports a lossless PNG. This is a lightweight client-side method, not the trained neural StegaStamp model. Resizing, editing, or JPEG-compressing the encoded image can damage the message. Keep the output as PNG.
+            <strong>Spec // Client-Side LSB Residual:</strong> Encodes a 12-byte magic/length/CRC32 header plus UTF-8 payload across RGB LSB channels (±1 intensity delta max per channel) and exports a lossless PNG. This is a deterministic client-side steganography engine, not the neural StegaStamp model. Resizing, re-saving, or lossy JPEG compression will corrupt the CRC32 checksum.
         </aside>
-        <footer>No uploads, accounts, or server-side processing required.</footer>
+        <footer>Zero Uploads // Zero Telemetry // Pure Client-Side Cryptography &amp; Steganography</footer>
     </main>
 
     <script>
@@ -401,7 +816,7 @@
             }
 
             async function encode() {
-                setBusy("encodeButton", true, "Processing image…");
+                setBusy("encodeButton", true, "PROCESSING IMAGE...");
                 setStatus("encodeStatus", "", "");
                 document.getElementById("encodeResult").classList.remove("visible");
                 try {
@@ -430,7 +845,7 @@
                     document.getElementById("encodeResult").classList.add("visible");
                     encodedImageData = source.imageData;
                     const capacityLabel = Math.max(0, capacity);
-                    setStatus("encodeStatus", "Encoded as a lossless PNG. " + messageBytes.length + " of " + capacityLabel + " available message bytes used.", "success");
+                    setStatus("encodeStatus", "Encoded as lossless PNG. " + messageBytes.length + " / " + capacityLabel + " bytes used.", "success");
                 } catch (error) {
                     setStatus("encodeStatus", error.message || "Could not encode this image.", "error");
                 } finally {
@@ -439,7 +854,7 @@
             }
 
             async function decode() {
-                setBusy("decodeButton", true, "Reading image…");
+                setBusy("decodeButton", true, "READING PIXELS...");
                 setStatus("decodeStatus", "", "");
                 document.getElementById("decodeResult").classList.remove("visible");
                 try {
